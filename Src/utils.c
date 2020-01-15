@@ -1986,11 +1986,22 @@ adjustwinsize(int from)
 
     if (zleactive && resetzle) {
 #ifdef TIOCGWINSZ
-	winchanged =
-#endif /* TIOCGWINSZ */
-	    resetneeded = 1;
+	if (winchanged) {
+	    winchanged = 2;
+	} else {
+	    do {
+		winchanged = resetneeded = 1;
+		zleentry(ZLE_CMD_RESET_PROMPT);
+		if (winchanged == 1)
+		    zleentry(ZLE_CMD_REFRESH);
+	    } while (winchanged != 1);
+	    winchanged = 0;
+	}
+#else
+	resetneeded = 1;
 	zleentry(ZLE_CMD_RESET_PROMPT);
 	zleentry(ZLE_CMD_REFRESH);
+#endif /* TIOCGWINSZ */
     }
 }
 
